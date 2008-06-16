@@ -35,6 +35,14 @@ class GoogleAnalytics extends Plugin {
 		}
 	}
 
+	/**
+	 * Add update beacon support
+	 **/
+	public function action_update_check()
+	{
+	 	Update::add( 'GoogleAnalytics', '7e57a660-3bd1-11dd-ae16-0800200c9a66', $this->info->version );
+	}
+
 	function theme_footer()
 	{
 		if ( URL::get_matched_rule()->entire_match == 'user/login') {
