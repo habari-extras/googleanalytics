@@ -9,7 +9,7 @@ class GoogleAnalytics extends Plugin {
 			'license' => 'Apache License 2.0',
 			'author' => 'Graham Christensen',
 			'authorurl' => 'http://iamgraham.net/',
-			'version' => '0.4'
+			'version' => '0.5-alpha'
 		);
 	}
 
