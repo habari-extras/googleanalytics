@@ -28,6 +28,7 @@ class GoogleAnalytics extends Plugin {
 				case _t('Configure'):
 					$form= new FormUI(strtolower(get_class($this)));
 					$form->append('text', 'clientcode', 'googleanalytics__clientcode', _t('Analytics Client Code'));
+					$form->append('checkbox', 'loggedintoo', 'googleanalytics__loggedintoo', _t('Track logged-in users too'));
 					$form->append('submit', 'save', 'Save');
 					$form->out();
 				break;
@@ -50,8 +51,10 @@ class GoogleAnalytics extends Plugin {
 			return;
 		}
 		if ( User::identify() ) {
-			// User is logged in, don't want to record that, do we?
-			return;
+			// Only track the logged in user if we were told to
+			if ( !Options::get('googleanalytics__loggedintoo') ) {
+				return;
+			}
 		}
 		$clientcode= Options::get('googleanalytics__clientcode');
 		echo <<<ENDAD
