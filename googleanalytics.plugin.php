@@ -26,7 +26,7 @@ class GoogleAnalytics extends Plugin {
 		if ( $plugin_id == $this->plugin_id() ) {
 			switch ($action) {
 				case _t('Configure'):
-					$form= new FormUI(strtolower(get_class($this)));
+					$form = new FormUI(strtolower(get_class($this)));
 					$form->append('text', 'clientcode', 'googleanalytics__clientcode', _t('Analytics Client Code'));
 					$form->append('checkbox', 'loggedintoo', 'googleanalytics__loggedintoo', _t('Track logged-in users too'));
 					$form->append('submit', 'save', 'Save');
@@ -56,7 +56,7 @@ class GoogleAnalytics extends Plugin {
 				return;
 			}
 		}
-		$clientcode= Options::get('googleanalytics__clientcode');
+		$clientcode = Options::get('googleanalytics__clientcode');
 		echo <<<ENDAD
 <script type='text/javascript'>
 	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
