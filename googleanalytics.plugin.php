@@ -9,7 +9,7 @@ class GoogleAnalytics extends Plugin {
 			'license' => 'Apache License 2.0',
 			'author' => 'Graham Christensen',
 			'authorurl' => 'http://iamgraham.net/',
-			'version' => '0.5-alpha'
+			'version' => '0.5.1'
 		);
 	}
 
@@ -50,7 +50,7 @@ class GoogleAnalytics extends Plugin {
 			// Login page; don't dipslay
 			return;
 		}
-		if ( User::identify() ) {
+		if ( User::identify()->loggedin ) {
 			// Only track the logged in user if we were told to
 			if ( !Options::get('googleanalytics__loggedintoo') ) {
 				return;
@@ -64,7 +64,6 @@ class GoogleAnalytics extends Plugin {
 </script>
 <script type="text/javascript">
 	var pageTracker = _gat._getTracker("{$clientcode}");
-	pageTracker._initData();
 	pageTracker._trackPageview();
 </script>
 ENDAD;
