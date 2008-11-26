@@ -5,7 +5,7 @@ class GoogleAnalytics extends Plugin {
 		return array(
 			'url' => 'http://iamgraham.net/plugins',
 			'name' => 'GoogleAnalytics',
-			'description'   => 'Automaticly adds Google Analytics code to the bottom of your webpage.',
+			'description'   => 'Automatically adds Google Analytics code to the bottom of your webpage.',
 			'license' => 'Apache License 2.0',
 			'author' => 'Graham Christensen',
 			'authorurl' => 'http://iamgraham.net/',
