@@ -46,27 +46,36 @@ class GoogleAnalytics extends Plugin {
 
 	function theme_footer()
 	{
+		
 		if ( URL::get_matched_rule()->entire_match == 'user/login') {
 			// Login page; don't dipslay
 			return;
 		}
-		if ( User::identify()->loggedin ) {
-			// Only track the logged in user if we were told to
-			if ( !Options::get('googleanalytics__loggedintoo') ) {
-				return;
-			}
-		}
+		
 		$clientcode = Options::get('googleanalytics__clientcode');
-		echo <<<ENDAD
+		
+		$script1 = <<<SCRIPT1
 <script type='text/javascript'>
 	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
 	var pageTracker = _gat._getTracker("{$clientcode}");
+</script>
+SCRIPT1;
+
+		$script2 = <<<SCRIPT2
+<script type="text/javascript">
 	pageTracker._trackPageview();
 </script>
-ENDAD;
+SCRIPT2;
+
+		// always output the first part, so things like the site overlay work for logged in users
+		echo $script1;
+
+		// only actually track the page if we're not logged in, or we're told to always track
+		if ( User::identify()->loggedin == false || Options::get('googleanalytics__loggedintoo') ) {
+			echo $script2;
+		}
+		
 	}
 
 }
