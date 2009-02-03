@@ -56,25 +56,53 @@ class GoogleAnalytics extends Plugin {
 		
 		$script1 = <<<SCRIPT1
 <script type='text/javascript'>
-	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-	var pageTracker = _gat._getTracker("{$clientcode}");
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 </script>
 SCRIPT1;
 
 		$script2 = <<<SCRIPT2
 <script type="text/javascript">
-	pageTracker._trackPageview();
+try {
+var pageTracker = _gat._getTracker("{$clientcode}");
+} catch(err) {}
 </script>
 SCRIPT2;
 
+		$script3 = <<<SCRIPT3
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("{$clientcode}");
+pageTracker._trackPageview();
+} catch(err) {}
+</script>
+SCRIPT3;
+
+
 		// always output the first part, so things like the site overlay work for logged in users
-		echo $script1;
+		echo <<<SCRIPT1
+<script type='text/javascript'>
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+SCRIPT1;
+
+		echo <<<SCRIPT2
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("{$clientcode}");
+SCRIPT2;
 
 		// only actually track the page if we're not logged in, or we're told to always track
 		if ( User::identify()->loggedin == false || Options::get('googleanalytics__loggedintoo') ) {
-			echo $script2;
+			echo <<<SCRIPT3
+pageTracker._trackPageview();
+SCRIPT3;
 		}
+
+		echo <<<SCRIPT4
+} catch(err) {}</script>
+SCRIPT4;
 		
 	}
 
