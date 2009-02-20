@@ -1,0 +1,10 @@
+<plugin>
+	<url>http://iamgraham.net/plugins</url>
+	<name>GoogleAnalytics</name>
+	<description>Automatically adds Google Analytics code to the bottom of your webpage.</description>
+	<license>Apache License 2.0</license>
+	<author>Graham Christensen</author>
+	<authorurl>http://iamgraham.net/</authorurl>
+	<version>0.5.1</version>
+</plugin>
+
