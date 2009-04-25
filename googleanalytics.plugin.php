@@ -16,10 +16,11 @@ class GoogleAnalytics extends Plugin
 
 	public function action_init()
 	{
-		$this->add_rule('"ga.js"', 'serve_javascript');
+		$this->add_rule('"ga.js"', 'serve_ga');
+		$this->add_rule('"gaextra.js"', 'serve_gaextra');
 	}
 
-	public function action_plugin_act_serve_javascript()
+	public function action_plugin_act_serve_ga()
 	{
 		if (Cache::has('ga.js')) {
 			$js = Cache::get('ga.js');
@@ -32,11 +33,15 @@ class GoogleAnalytics extends Plugin
 		ob_clean();
 		header('Content-Type: application/javascript');
 
-		if (!User::identify()->loggedin || Options::get('googleanalytics__loggedintoo')) {
-			include 'googleanalytics.js.php';
-		}
-
 		echo $js;
+	}
+
+	public function action_plugin_act_serve_gaextra()
+	{
+		ob_clean();
+		header('Content-Type: application/javascript');
+
+		include 'googleanalytics.js.php';
 	}
 
 	private function detect_ssl()
@@ -93,16 +98,21 @@ class GoogleAnalytics extends Plugin
 
 		$clientcode = Options::get('googleanalytics__clientcode');
 
+		// get the url for the main Google Analytics code
 		if (Options::get('googleanalytics__cache')) {
-			$ga_url = Site::get_url('habari').'/ga.js';
+			$ga_url = Site::get_url('habari') . '/ga.js';
 		} else {
-			$ga_url = (self::detect_ssl())?'https://ssl.google-analytics.com/ga.js':'http://www.google-analytics.com/ga.js';
+			$ga_url = (self::detect_ssl()) ? 'https://ssl.google-analytics.com/ga.js' : 'http://www.google-analytics.com/ga.js';
 		}
 
 		// only actually track the page if we're not logged in, or we're told to always track
-		$track_page = (!User::identify()->loggedin || Options::get('googleanalytics__loggedintoo'))?'pageTracker._trackPageview();':'';
+		$do_tracking = (!User::identify()->loggedin || Options::get('googleanalytics__loggedintoo'));
+
+		$ga_extra_url = ($do_tracking) ? '<script src="' . Site::get_url('habari') . '/gaextra.js' . '" type="text/javascript"></script>' : '';
+		$track_page   = ($do_tracking) ? 'pageTracker._trackPageview();' : '';
 
 		echo <<<ANALYTICS
+{$ga_extra_url}
 <script src="{$ga_url}" type="text/javascript"></script>
 <script type="text/javascript">
 <!--//--><![CDATA[//><!--
