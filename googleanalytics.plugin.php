@@ -1,22 +1,57 @@
 <?php
-class GoogleAnalytics extends Plugin {
-	function info()
+class GoogleAnalytics extends Plugin
+{
+	public function info()
 	{
 		return array(
 			'url' => 'http://iamgraham.net/plugins',
 			'name' => 'GoogleAnalytics',
-			'description'   => 'Automatically adds Google Analytics code to the bottom of your webpage.',
+			'description' => 'Automatically adds Google Analytics code to the bottom of your webpage.',
 			'license' => 'Apache License 2.0',
 			'author' => 'Graham Christensen',
 			'authorurl' => 'http://iamgraham.net/',
-			'version' => '0.5.1'
+			'version' => '0.5.2'
 		);
+	}
+
+	public function action_init()
+	{
+		$this->add_rule('"ga.js"', 'serve_javascript');
+	}
+
+	public function action_plugin_act_serve_javascript()
+	{
+		if (Cache::has('ga.js')) {
+			$js = Cache::get('ga.js');
+		} else {
+			$js = RemoteRequest::get_contents('http://www.google-analytics.com/ga.js');
+			Cache::set('ga.js', $js, 86400); // cache for 1 day
+		}
+
+		// Clean the output buffer, so we can output from the header/scratch
+		ob_clean();
+		header('Content-Type: application/javascript');
+
+		if (!User::identify()->loggedin || Options::get('googleanalytics__loggedintoo')) {
+			include 'googleanalytics.js.php';
+		}
+
+		echo $js;
+	}
+
+	private function detect_ssl()
+	{
+		if ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1 || $_SERVER['SERVER_PORT'] == 443) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public function filter_plugin_config($actions, $plugin_id)
 	{
 		if ($plugin_id == $this->plugin_id()) {
-			$actions[]= _t('Configure');
+			$actions[] = _t('Configure');
 		}
 		return $actions;
 	}
@@ -29,6 +64,11 @@ class GoogleAnalytics extends Plugin {
 					$form = new FormUI(strtolower(get_class($this)));
 					$form->append('text', 'clientcode', 'googleanalytics__clientcode', _t('Analytics Client Code'));
 					$form->append('checkbox', 'loggedintoo', 'googleanalytics__loggedintoo', _t('Track logged-in users too'));
+					$form->append('checkbox', 'trackoutgoing', 'googleanalytics__trackoutgoing', _t('Track outgoing links'));
+					$form->append('checkbox', 'trackmailto', 'googleanalytics__trackmailto', _t('Track mailto links'));
+					$form->append('checkbox', 'trackfiles', 'googleanalytics__trackfiles', _t('Track download links'));
+					$form->append('textarea', 'track_extensions', 'googleanalytics__trackfiles_extensions', _t('File extensions to track (comma separated)'));
+					$form->append('checkbox', 'cache', 'googleanalytics__cache', _t('Cache tracking code file locally'));
 					$form->append('submit', 'save', 'Save');
 					$form->out();
 				break;
@@ -41,69 +81,35 @@ class GoogleAnalytics extends Plugin {
 	 **/
 	public function action_update_check()
 	{
-	 	Update::add( 'GoogleAnalytics', '7e57a660-3bd1-11dd-ae16-0800200c9a66', $this->info->version );
+		Update::add( 'GoogleAnalytics', '7e57a660-3bd1-11dd-ae16-0800200c9a66', $this->info->version );
 	}
 
-	function theme_footer()
+	public function theme_footer()
 	{
-		
-		if ( URL::get_matched_rule()->entire_match == 'user/login') {
-			// Login page; don't dipslay
+		if (URL::get_matched_rule()->entire_match == 'user/login') {
+			// Login page; don't display
 			return;
 		}
-		
+
 		$clientcode = Options::get('googleanalytics__clientcode');
-		
-		$script1 = <<<SCRIPT1
-<script type='text/javascript'>
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-SCRIPT1;
 
-		$script2 = <<<SCRIPT2
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("{$clientcode}");
-} catch(err) {}
-</script>
-SCRIPT2;
-
-		$script3 = <<<SCRIPT3
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("{$clientcode}");
-pageTracker._trackPageview();
-} catch(err) {}
-</script>
-SCRIPT3;
-
-
-		// always output the first part, so things like the site overlay work for logged in users
-		echo <<<SCRIPT1
-<script type='text/javascript'>
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-SCRIPT1;
-
-		echo <<<SCRIPT2
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("{$clientcode}");
-SCRIPT2;
-
-		// only actually track the page if we're not logged in, or we're told to always track
-		if ( User::identify()->loggedin == false || Options::get('googleanalytics__loggedintoo') ) {
-			echo <<<SCRIPT3
-pageTracker._trackPageview();
-SCRIPT3;
+		if (Options::get('googleanalytics__cache')) {
+			$ga_url = Site::get_url('habari').'/ga.js';
+		} else {
+			$ga_url = (self::detect_ssl())?'https://ssl.google-analytics.com/ga.js':'http://www.google-analytics.com/ga.js';
 		}
 
-		echo <<<SCRIPT4
-} catch(err) {}</script>
-SCRIPT4;
-		
+		// only actually track the page if we're not logged in, or we're told to always track
+		$track_page = (!User::identify()->loggedin || Options::get('googleanalytics__loggedintoo'))?'pageTracker._trackPageview();':'';
+
+		echo <<<ANALYTICS
+<script src="{$ga_url}" type="text/javascript"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+try {var pageTracker = _gat._getTracker("{$clientcode}");{$track_page}} catch(e) {}
+//--><!]]>
+</script>
+ANALYTICS;
 	}
 
 }
