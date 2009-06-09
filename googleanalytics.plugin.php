@@ -1,18 +1,6 @@
 <?php
 class GoogleAnalytics extends Plugin
 {
-	public function info()
-	{
-		return array(
-			'url' => 'http://iamgraham.net/plugins',
-			'name' => 'GoogleAnalytics',
-			'description' => 'Automatically adds Google Analytics code to the bottom of your webpage.',
-			'license' => 'Apache License 2.0',
-			'author' => 'Graham Christensen',
-			'authorurl' => 'http://iamgraham.net/',
-			'version' => '0.5.2'
-		);
-	}
 
 	public function action_init()
 	{
