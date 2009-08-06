@@ -1,10 +1,11 @@
-<plugin>
-	<url>http://iamgraham.net/plugins</url>
+<?xml version="1.0" encoding="utf-8" ?>
+<pluggable type="plugin">
 	<name>GoogleAnalytics</name>
-	<description>Automatically adds Google Analytics code to the bottom of your webpage.</description>
-	<license>Apache License 2.0</license>
-	<author>Graham Christensen</author>
-	<authorurl>http://iamgraham.net/</authorurl>
-	<version>0.5.2</version>
-</plugin>
-
+	<license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
+	<author url="http://iamgraham.net/" >Graham Christensen</author>
+	<author url="http://habariproject.org/">Habari Community</author>
+	<url>http://habariproject.org/</url>
+	<version>0.5</version>
+	<description><![CDATA[Automatically adds Google Analytics code to the bottom of your webpage.]]></description>
+	<copyright>2009</copyright>
+</pluggable>
