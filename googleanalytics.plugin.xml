@@ -6,6 +6,6 @@
 	<author url="http://habariproject.org/">The Habari Community</author>
 	<url>http://habariproject.org/</url>
 	<version>0.6</version>
-	<description><![CDATA[Automatically adds Google Analytics code to the bottom of your webpage.]]></description>
+	<description><![CDATA[Automatically adds Google Analytics tracking code to your webpage.]]></description>
 	<copyright>2009</copyright>
 </pluggable>
