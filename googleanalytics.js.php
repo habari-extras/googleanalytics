@@ -1,8 +1,3 @@
-<?php
-$extensions = explode(',', Options::get('googleanalytics__trackfiles_extensions'));
-$extensions = array_map('trim', $extensions);
-$extensions = implode('|', $extensions);
-?>
 var GoogleAnalytics = {
 	trackClick: function (a) {
 		var isInternal = new RegExp("^(https?):\/\/" + window.location.host, "i");

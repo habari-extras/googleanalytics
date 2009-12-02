@@ -1,27 +1,21 @@
 <?php
+
 class GoogleAnalytics extends Plugin
 {
-
 	public function action_init()
 	{
-		$this->add_rule('"ga.js"', 'serve_ga');
 		$this->add_rule('"gaextra.js"', 'serve_gaextra');
 	}
 
-	public function action_plugin_act_serve_ga()
+	/**
+	 * Add the tracking code to the template_header_javascript Stack.
+	 *
+	 * @todo determine if there is a better action to use
+	 * @return null
+	 */
+	public function action_init_theme()
 	{
-		if (Cache::has('ga.js')) {
-			$js = Cache::get('ga.js');
-		} else {
-			$js = RemoteRequest::get_contents('http://www.google-analytics.com/ga.js');
-			Cache::set('ga.js', $js, 86400); // cache for 1 day
-		}
-
-		// Clean the output buffer, so we can output from the header/scratch
-		ob_clean();
-		header('Content-Type: application/javascript');
-
-		echo $js;
+        Stack::add('template_header_javascript', $this->tracking_code(), 'googleanalytics');
 	}
 
 	public function action_plugin_act_serve_gaextra()
@@ -29,16 +23,12 @@ class GoogleAnalytics extends Plugin
 		ob_clean();
 		header('Content-Type: application/javascript');
 
-		include 'googleanalytics.js.php';
-	}
+		// format extensions for regex match
+        $extensions = explode(',', Options::get('googleanalytics__trackfiles_extensions'));
+        $extensions = array_map('trim', $extensions);
+        $extensions = implode('|', $extensions);
 
-	private function detect_ssl()
-	{
-		if ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1 || $_SERVER['SERVER_PORT'] == 443) {
-			return true;
-		}
-
-		return false;
+        include 'googleanalytics.js.php';
 	}
 
 	public function filter_plugin_config($actions, $plugin_id)
@@ -61,7 +51,6 @@ class GoogleAnalytics extends Plugin
 					$form->append('checkbox', 'trackmailto', 'googleanalytics__trackmailto', _t('Track mailto links'));
 					$form->append('checkbox', 'trackfiles', 'googleanalytics__trackfiles', _t('Track download links'));
 					$form->append('textarea', 'track_extensions', 'googleanalytics__trackfiles_extensions', _t('File extensions to track (comma separated)'));
-					$form->append('checkbox', 'cache', 'googleanalytics__cache', _t('Cache tracking code file locally'));
 					$form->append('submit', 'save', 'Save');
 					$form->out();
 				break;
@@ -77,38 +66,46 @@ class GoogleAnalytics extends Plugin
 		Update::add( 'GoogleAnalytics', '7e57a660-3bd1-11dd-ae16-0800200c9a66', $this->info->version );
 	}
 
-	public function theme_footer()
+	private function tracking_code()
 	{
-		if (URL::get_matched_rule()->entire_match == 'user/login') {
-			// Login page; don't display
-			return;
-		}
+        if (URL::get_matched_rule()->entire_match == 'user/login') {
+            // Login page; don't display
+            return;
+        }
 
-		$clientcode = Options::get('googleanalytics__clientcode');
+        $clientcode = Options::get('googleanalytics__clientcode');
 
-		// get the url for the main Google Analytics code
-		if (Options::get('googleanalytics__cache')) {
-			$ga_url = Site::get_url('habari') . '/ga.js';
-		} else {
-			$ga_url = (self::detect_ssl()) ? 'https://ssl.google-analytics.com/ga.js' : 'http://www.google-analytics.com/ga.js';
-		}
+        if (empty($clientcode)) {
+            return;
+        }
 
-		// only actually track the page if we're not logged in, or we're told to always track
-		$do_tracking = (!User::identify()->loggedin || Options::get('googleanalytics__loggedintoo'));
+        // only actually track the page if we're not logged in, or we're told to always track
+        $do_tracking = !User::identify()->loggedin || Options::get('googleanalytics__loggedintoo');
+        $track_pageview = ($do_tracking) ? "_gaq.push(['_trackPageview']);" : '';
+        $habari_url = Site::get_url('habari');
 
-		$ga_extra_url = ($do_tracking) ? '<script src="' . Site::get_url('habari') . '/gaextra.js' . '" type="text/javascript"></script>' : '';
-		$track_page   = ($do_tracking) ? 'pageTracker._trackPageview();' : '';
+        $extra = <<<EXTRA
+var extra = document.createElement('script');
+extra.src = '{$habari_url}/gaextra.js';
+extra.setAttribute('async', 'true');
+document.documentElement.firstChild.appendChild(extra);
+EXTRA;
 
-		echo <<<ANALYTICS
-{$ga_extra_url}
-<script src="{$ga_url}" type="text/javascript"></script>
-<script type="text/javascript">
-<!--//--><![CDATA[//><!--
-try {var pageTracker = _gat._getTracker("{$clientcode}");{$track_page}} catch(e) {}
-//--><!]]>
-</script>
+        return <<<ANALYTICS
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', '{$clientcode}']);
+{$track_pageview}
+
+(function() {
+  var ga = document.createElement('script');
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+      'http://www') + '.google-analytics.com/ga.js';
+  ga.setAttribute('async', 'true');
+  document.documentElement.firstChild.appendChild(ga);
+  {$extra}
+})();
 ANALYTICS;
 	}
-
 }
+
 ?>
