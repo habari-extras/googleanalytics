@@ -15,7 +15,10 @@ class GoogleAnalytics extends Plugin
 	 */
 	public function action_init_theme()
 	{
-        Stack::add('template_header_javascript', $this->tracking_code(), 'googleanalytics');
+		$code = $this->tracking_code();
+		if ( $code != null ) {
+			Stack::add('template_header_javascript', $code, 'googleanalytics');
+		}
 	}
 
 	public function action_plugin_act_serve_gaextra()
