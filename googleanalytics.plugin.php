@@ -27,16 +27,16 @@ class GoogleAnalytics extends Plugin
 		header('Content-Type: application/javascript');
 
 		// format extensions for regex match
-        $extensions = explode(',', Options::get('googleanalytics__trackfiles_extensions'));
-        $extensions = array_map('trim', $extensions);
-        $extensions = implode('|', $extensions);
+		$extensions = explode(',', Options::get('googleanalytics__trackfiles_extensions'));
+		$extensions = array_map('trim', $extensions);
+		$extensions = implode('|', $extensions);
 
-        include 'googleanalytics.js.php';
+		include 'googleanalytics.js.php';
 	}
 
 	public function filter_plugin_config($actions, $plugin_id)
 	{
-		if ($plugin_id == $this->plugin_id()) {
+		if ( $plugin_id == $this->plugin_id() ) {
 			$actions[] = _t('Configure');
 		}
 		return $actions;
@@ -71,30 +71,30 @@ class GoogleAnalytics extends Plugin
 
 	private function tracking_code()
 	{
-        if (URL::get_matched_rule()->entire_match == 'user/login') {
-            // Login page; don't display
-            return;
-        }
+		if ( URL::get_matched_rule()->entire_match == 'user/login' ) {
+			// Login page; don't display
+			return;
+		}
 
-        $clientcode = Options::get('googleanalytics__clientcode');
+		$clientcode = Options::get('googleanalytics__clientcode');
 
-        if (empty($clientcode)) {
-            return;
-        }
+		if ( empty($clientcode) ) {
+			return;
+		}
 
-        // only actually track the page if we're not logged in, or we're told to always track
-        $do_tracking = !User::identify()->loggedin || Options::get('googleanalytics__loggedintoo');
-        $track_pageview = ($do_tracking) ? "_gaq.push(['_trackPageview']);" : '';
-        $habari_url = Site::get_url('habari');
+		// only actually track the page if we're not logged in, or we're told to always track
+		$do_tracking = !User::identify()->loggedin || Options::get('googleanalytics__loggedintoo');
+		$track_pageview = ($do_tracking) ? "_gaq.push(['_trackPageview']);" : '';
+		$habari_url = Site::get_url('habari');
 
-        $extra = <<<EXTRA
+		$extra = <<<EXTRA
 var extra = document.createElement('script');
 extra.src = '{$habari_url}/gaextra.js';
 extra.setAttribute('async', 'true');
 document.documentElement.firstChild.appendChild(extra);
 EXTRA;
 
-        return <<<ANALYTICS
+		return <<<ANALYTICS
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', '{$clientcode}']);
 {$track_pageview}
