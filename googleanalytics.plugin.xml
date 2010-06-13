@@ -8,5 +8,10 @@
 	<version>0.6</version>
 	<description><![CDATA[Automatically adds Google Analytics tracking code to your webpage.]]></description>
 	<copyright>2009</copyright>
+	<help>
+		<value>
+			<![CDATA[Activate and configure this plugin, and the code will be inserted into the blog header. No theme editing required.]]>
+		</value>
+	</help>
 </pluggable>
  
