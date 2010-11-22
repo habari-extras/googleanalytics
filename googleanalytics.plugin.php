@@ -34,39 +34,17 @@ class GoogleAnalytics extends Plugin
 		include 'googleanalytics.js.php';
 	}
 
-	public function filter_plugin_config($actions, $plugin_id)
+	public function configure()
 	{
-		if ( $plugin_id == $this->plugin_id() ) {
-			$actions[] = _t('Configure');
-		}
-		return $actions;
-	}
-
-	public function action_plugin_ui($plugin_id, $action)
-	{
-		if ( $plugin_id == $this->plugin_id() ) {
-			switch ($action) {
-				case _t('Configure'):
-					$form = new FormUI(strtolower(get_class($this)));
-					$form->append('text', 'clientcode', 'googleanalytics__clientcode', _t('Analytics Client Code'));
-					$form->append('checkbox', 'loggedintoo', 'googleanalytics__loggedintoo', _t('Track logged-in users too'));
-					$form->append('checkbox', 'trackoutgoing', 'googleanalytics__trackoutgoing', _t('Track outgoing links'));
-					$form->append('checkbox', 'trackmailto', 'googleanalytics__trackmailto', _t('Track mailto links'));
-					$form->append('checkbox', 'trackfiles', 'googleanalytics__trackfiles', _t('Track download links'));
-					$form->append('textarea', 'track_extensions', 'googleanalytics__trackfiles_extensions', _t('File extensions to track (comma separated)'));
-					$form->append('submit', 'save', 'Save');
-					$form->out();
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Add update beacon support
-	 **/
-	public function action_update_check()
-	{
-		Update::add( 'GoogleAnalytics', '7e57a660-3bd1-11dd-ae16-0800200c9a66', $this->info->version );
+		$form = new FormUI(strtolower(get_class($this)));
+		$form->append('text', 'clientcode', 'googleanalytics__clientcode', _t('Analytics Client Code'));
+		$form->append('checkbox', 'loggedintoo', 'googleanalytics__loggedintoo', _t('Track logged-in users too'));
+		$form->append('checkbox', 'trackoutgoing', 'googleanalytics__trackoutgoing', _t('Track outgoing links'));
+		$form->append('checkbox', 'trackmailto', 'googleanalytics__trackmailto', _t('Track mailto links'));
+		$form->append('checkbox', 'trackfiles', 'googleanalytics__trackfiles', _t('Track download links'));
+		$form->append('textarea', 'track_extensions', 'googleanalytics__trackfiles_extensions', _t('File extensions to track (comma separated)'));
+		$form->append('submit', 'save', 'Save');
+		return $form;
 	}
 
 	private function tracking_code()
