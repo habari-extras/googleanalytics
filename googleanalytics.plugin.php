@@ -13,7 +13,7 @@ class GoogleAnalytics extends Plugin
 	 * @todo determine if there is a better action to use
 	 * @return null
 	 */
-	public function action_init_theme()
+	public function action_init_theme_any( $theme )
 	{
 		$code = $this->tracking_code();
 		if ( $code != null ) {

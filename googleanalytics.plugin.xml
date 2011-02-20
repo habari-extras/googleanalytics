@@ -5,7 +5,7 @@
 	<author url="http://iamgraham.net/" >Graham Christensen</author>
 	<author url="http://habariproject.org/">The Habari Community</author>
 	<url>http://habariproject.org/</url>
-	<version>0.6</version>
+	<version>0.7</version>
 	<guid>7e57a660-3bd1-11dd-ae16-0800200c9a66</guid>
 	<description><![CDATA[Automatically adds Google Analytics tracking code to your webpage.]]></description>
 	<copyright>2009</copyright>
