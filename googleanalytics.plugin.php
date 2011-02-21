@@ -66,27 +66,26 @@ class GoogleAnalytics extends Plugin
 		$habari_url = Site::get_url('habari');
 
 		$extra = <<<EXTRA
-var extra = document.createElement('script');
-extra.src = '{$habari_url}/gaextra.js';
-extra.setAttribute('async', 'true');
-document.documentElement.firstChild.appendChild(extra);
+
+  var ex = document.createElement('script'); ex.type = 'text/javascript'; ex.async = true;
+  ex.src = '{$habari_url}/gaextra.js';
+  s.parentNode.insertBefore(ex, s);
+
 EXTRA;
 
 		return <<<ANALYTICS
+
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', '{$clientcode}']);
 {$track_pageview}
 
 (function() {
-  var ga = document.createElement('script');
-  ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
-      'http://www') + '.google-analytics.com/ga.js';
-  ga.setAttribute('async', 'true');
-  document.documentElement.firstChild.appendChild(ga);
-  {$extra}
-})();
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+{$extra}})();
+
 ANALYTICS;
 	}
 }
-
 ?>
