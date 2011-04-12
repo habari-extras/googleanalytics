@@ -39,10 +39,13 @@ class GoogleAnalytics extends Plugin
 		$form = new FormUI(strtolower(get_class($this)));
 		$form->append('text', 'clientcode', 'googleanalytics__clientcode', _t('Analytics Client Code'));
 		$form->append('checkbox', 'loggedintoo', 'googleanalytics__loggedintoo', _t('Track logged-in users too'));
-		$form->append('checkbox', 'trackoutgoing', 'googleanalytics__trackoutgoing', _t('Track outgoing links'));
-		$form->append('checkbox', 'trackmailto', 'googleanalytics__trackmailto', _t('Track mailto links'));
-		$form->append('checkbox', 'trackfiles', 'googleanalytics__trackfiles', _t('Track download links'));
-		$form->append('textarea', 'track_extensions', 'googleanalytics__trackfiles_extensions', _t('File extensions to track (comma separated)'));
+		$form->append('checkbox', 'skip_gaextra', 'googleanalytics__skip_gaextra', _t('Skip inclusion of gaextra.js'));
+		if(!Options::get('googleanalytics__skip_gaextra')) {
+			$form->append('checkbox', 'trackoutgoing', 'googleanalytics__trackoutgoing', _t('Track outgoing links'));
+			$form->append('checkbox', 'trackmailto', 'googleanalytics__trackmailto', _t('Track mailto links'));
+			$form->append('checkbox', 'trackfiles', 'googleanalytics__trackfiles', _t('Track download links'));
+			$form->append('textarea', 'track_extensions', 'googleanalytics__trackfiles_extensions', _t('File extensions to track (comma separated)'));
+		}
 		$form->append('submit', 'save', 'Save');
 		return $form;
 	}
@@ -65,14 +68,17 @@ class GoogleAnalytics extends Plugin
 		$track_pageview = ($do_tracking) ? "_gaq.push(['_trackPageview']);" : '';
 		$habari_url = Site::get_url('habari');
 
-		$extra = <<<EXTRA
+		if(Options::get('googleanalytics__skip_gaextra')) {
+			$extra = '';
+		} else {
+			$extra = <<<EXTRA
 
   var ex = document.createElement('script'); ex.type = 'text/javascript'; ex.async = true;
   ex.src = '{$habari_url}/gaextra.js';
   s.parentNode.insertBefore(ex, s);
 
 EXTRA;
-
+		}
 		return <<<ANALYTICS
 
 var _gaq = _gaq || [];
